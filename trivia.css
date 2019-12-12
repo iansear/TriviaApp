@@ -1,0 +1,121 @@
+* {
+  margin: 0;
+}
+
+body {
+  background: linear-gradient(blueviolet, black);
+  font-family: "Roboto", sans-serif;
+}
+
+ul li {
+  list-style-type: none;
+}
+
+img {
+  width: 75%;
+  margin: 5px 0 25px 0px;
+}
+
+.navbar {
+  opacity: 0.3;
+  background-color: black;
+  width: 100vw;
+}
+
+.container-fluid {
+  min-height: 100vh;
+  padding: 0px;
+  color: white;
+}
+
+.question {
+  margin: 15px 5px;
+  padding: 5px;
+  color: white;
+  min-height: 300px;
+}
+
+/* hide div overflow scrollbars in play section */
+/* fixes problem for Dan that scrollbar comes on and off during question countdown */
+#play {
+  overflow-x: hidden;
+  overflow-y: hidden;  
+}
+
+#answers {
+  padding: 10px;
+}
+
+#answers div button {
+  flex-wrap: wrap;
+  padding: 2px;
+  margin-bottom: 15px;
+  border-radius: 15%;
+  color: white;
+  background-color: blueviolet;
+  min-width: 100px;
+  min-height: 100px;
+  box-shadow: 0px 0 0 navy inset;
+  -webkit-transition-duration: 0.2s;
+  -webkit-transition-timing-function: linear;
+}
+#answers div button:hover {
+  box-shadow:0 0 2px 50px navy inset;
+  -webkit-transform: scale(1);
+}
+
+#users {
+  bottom: 0px;
+  position: fixed;
+  width: 100%;
+  min-height: 150px;
+}
+
+/* PHONES */
+@media (max-width: 576px) {
+  #animate {
+    font-size: 10vw;
+  }
+  #landingLeft, select {
+    color: white;
+  }
+}
+
+#landing select,
+#getem {
+  width: 100%;
+}
+
+#numberOfQuestions {
+  width: 200px;
+}
+
+#landing select,
+#getem,
+#numberOfQuestions {
+  height: 30px;
+}
+
+#getem {
+  height: 50px;
+}
+
+#scoreboard {
+  border: 2px solid lightgrey;
+  border-radius: 5px;
+  width: 99%;
+  text-align: center;
+}
+
+#landingRight,
+#landingLeft {
+  text-align: center;
+}
+
+#animate {
+  animation-duration: 2s;
+  animation-delay: 1s;
+  font-size: 15vh;
+  font-family: "Bebas Neue", cursive;
+  bottom: 100px;
+}

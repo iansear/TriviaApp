@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Trivia</title>
+  <!-- STYLE SHEETS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css?family=Bebas+Neue|Roboto&display=swap" rel="stylesheet">   <link rel="stylesheet" href="trivia.css">
+</head>
+<body>
+  <div class="container-fluid">
+    <nav class="navbar navbar-light">
+      <span class="navbar-brand mb-0 h1 text-white" id="banner">Trivia</span>
+      <button class="text-white btn bg-dark" id="logOutButton" style="display:none">Log Out</button> 
+    </nav>
+    <div class="justify-content-center">
+<!-- LOGIN /REGISTER SECTION -->
+<section id="login">
+  <div class="container">
+    <div class="row justify-content-center">
+      <img src="https://www.pngkey.com/png/full/81-815035_1a890a81-trivia-night-grpahic-transparent-trivia.png" />
+    </div>
+    <div class="row ml-5" id="registerDiv">
+      <h3>Register</h3>
+      <div class="col-md-10 mx-auto">
+      </div>
+      <div class="form-group col">
+        <input type="email" placeholder="Enter Email" id="registerEmailTextBox"/>
+      </div>
+      <div class="form-group col">
+        <input type="password" placeholder="Enter Password" id="registerPasswordTextBox"/>
+      </div>
+      <div class="col">
+        <button class="btn btn-dark" id="registerButton">Register</button>
+      </div>
+    </div>
+  </div>
+  <div class="container mt-5">
+    <div class="row ml-5" id="loginDiv">
+      <h3>Login</h3>
+      <div class="col-md-10 mx-auto">
+      </div>
+      <div class="form-group col">  
+        <input type="email" placeholder="Enter Email" id="logInEmailTextBox"/>
+      </div>
+      <div class="form-group col">
+        <input type="password" placeholder="Enter Password" id="logInPasswordTextBox"/>
+      </div>
+      <div class="col">
+        <button class="btn btn-dark" id="logInButton">Log In</button>
+      </div>
+  </div>
+</section>
+
+<!-- LANDING PAGE/SHOW AFTER USER LOGS IN TO GENERATE QUIZ-->
+<section id="landing" style="display:none" class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-lg-4" id="landingLeft">
+      <label># of Questions</label>
+      <input id="numberOfQuestions" type="number" placeholder="Number of Questions" min="1" max="50" value="10">
+      <br>
+      <select class="custom-select-mx-auto" id="categoryMenu">
+      </select><br>
+      <select class="custom-select-mx-auto" id="difficulty">
+        <option value="">Any Difficulty</option>
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+      </select><br>
+      <select class="custom-select-mx-auto" id="questionType">
+        <option value="">Any Type</option>
+        <option value="multiple">Multiple Choice</option>
+        <option value="boolean">True / False</option>
+      </select><br>
+      <!-- <form action="/action_page.php"></form> -->
+        <p>Select a game mode</p>
+
+          <input type="radio" name="game-mode" checked> Single Player
+          <input type="radio" name="game-mode"> Multiplayer
+          <input type="radio" name="game-mode"> Multiplayer + Host<br><br> 
+      <button class="btn btn-dark" id="getem">Generate Quiz!</button>
+      
+    </div>
+    <div class="col-lg-8" id="landingRight">
+      <h1 id="animate" class="animated zoomInDown">GET READY FOR<br> SOME TRIVIA!</h1>
+    </div>
+  </div>
+  
+  <div class="row justify-content-center">
+    <div id="scoreboard">Leaderboard:</div>
+  </div>
+</section>
+
+<!-- PLAY & DISPLAY GAME SECTION -->
+<section id="play" style="display:none">
+  <div class="container-fluid question">
+    <div class="row justify-content-center">
+      <div class="col">
+        <h5 id="questionnum">Question number</h5>
+      </div>
+      <div class="col mr-3 d-flex justify-content-end">
+        <h5 id="countdown">00</h5>
+      </div>
+    </div>
+    <div class="row justify-content-center text-wrap">
+      <div>        
+        <h2 class="p-3 text-center" id="question">Question Area</h2>
+      </div>
+    </div>
+    <div class="row ml-0 justify-content-around" id="answers">
+      <div class="col">Answer 1</div>
+      <div class="col">Answer 2</div>
+      <div class="col">Answer 3</div>
+      <div class="col">Answer 4</div>
+    </div>
+    <div class="row" id="users" style="display: none"> 
+      <div class="col justify-content-center">Users
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+</div>
+
+
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+  <script src="https://www.gstatic.com/firebasejs/7.5.2/firebase-app.js"></script>
+<!-- Authentication Library for Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/7.5.2/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.5.2/firebase-database.js"></script>
+<!-- TODO: Add SDKs for Firebase products that you want to use
+https://firebase.google.com/docs/web/setup#available-libraries -->
+  <script>
+      // Your web app's Firebase configuration
+      var firebaseConfig = {
+        apiKey: "AIzaSyCYVrGcmSuM1DpVfpF32eLCj9FYCTk8RC8",
+        authDomain: "triviaapp-8d3b9.firebaseapp.com",
+        databaseURL: "https://triviaapp-8d3b9.firebaseio.com",
+        projectId: "triviaapp-8d3b9",
+        storageBucket: "triviaapp-8d3b9.appspot.com",
+        messagingSenderId: "823199186177",
+        appId: "1:823199186177:web:de0851257e611d07a8ef00"
+      };
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+  </script>
+    <script src="scripts/classes.js"></script>
+    <script src="scripts/login.js"></script>
+    <script src="scripts/home.js"></script>
+    <script src="scripts/displayquestion.js"></script>
+    <script src="scripts/readquiz.js"></script>
+    <script src="scripts/database.js"></script>
+    <script src="scripts/scoring.js"></script>
+    <script src="scripts/start_game.js"></script>
+  </body>
+</html>
