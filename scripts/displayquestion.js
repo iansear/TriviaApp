@@ -1,4 +1,4 @@
-function displayQuestion(quiz,n) {
+function displayQuestion(quiz, n, activeButtons = true) {
     // function to display the nth question from a quiz
 
     // a Quiz is an object with:
@@ -9,6 +9,9 @@ function displayQuestion(quiz,n) {
     // a Question is an object with
     // text(string)
     // answers[] (string)
+
+    // activeButtons - should the answer buttons be active or not?
+    // defaults to true, pass a false if this is multi-player only ('M') mode
 
     const questionnum = document.getElementById('questionnum');
     const question = document.getElementById('question');
@@ -41,7 +44,13 @@ function displayQuestion(quiz,n) {
     // create the answer buttons
     let answersHTML = [];
     for (let i = 0; i < dispAnswers.length; i++) {
-        answersHTML.push(`<div class="col"><button id="${i}" onclick="buttonClick(event);">${dispAnswers[i]}</button></div>`);
+        if (activeButtons) {
+            answersHTML.push(`<div class="col"><button id="${i}" onclick="buttonClick(event);">${dispAnswers[i]}</button></div>`);
+        }
+        else
+        {
+            answersHTML.push(`<div class="col"><button id="${i}" disabled onclick="buttonClick(event);">${dispAnswers[i]}</button></div>`);
+        }
     }
     answers.innerHTML = answersHTML.join(' ');
 }

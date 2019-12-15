@@ -6,6 +6,7 @@ let goButton = document.getElementById("getem")
 let sessionToken = ""
 let modeButtons = document.getElementsByName("game-mode");
 
+//Builds URL to send to API from user input
 goButton.addEventListener("click", () => {
     let amount = ""
     if(numberOfQuestions.value != "") {
@@ -31,6 +32,7 @@ goButton.addEventListener("click", () => {
     getTrivia(triviaURL)
 })
 
+//Gets trivia questions from the API and handles response code.
 async function getTrivia(url) {
     let rawResponse = await fetch(url)
     let response = await rawResponse.json()
@@ -59,13 +61,14 @@ async function getTrivia(url) {
         alert("Token not found. Getting token.")
         getToken()
     } else if(response.response_code == 4) {
-        alert("Too many questions requested, ask for less. Reseting session token.")
+        alert("Not enough questions left. Reseting session token.")
         resetToken()
     } else {
         alert("Something spooky happened.")
     }
 }
 
+//Gets a token from the API to prevent repeated questions
 async function getToken() {
     let tokenURL = "https://opentdb.com/api_token.php?command=request"
     let rawSessionToken = await fetch(tokenURL)
@@ -73,11 +76,13 @@ async function getToken() {
     sessionToken = sessionTokenJSON.token
 }
 
+//Resets the token based on API instructions if the response code is 4.
 async function resetToken() {
     let resetURL = `https://opentdb.com/api_token.php?command=reset&token=${sessionToken}`
     await fetch(resetURL)
 }
 
+//Gets all available categories from API
 async function getCategories() {
     let catURL = "https://opentdb.com/api_category.php"
     let rawResponse = await fetch(catURL)
@@ -85,6 +90,7 @@ async function getCategories() {
     displayCats(response)
 }
 
+//Populates all available categories to index.html
 function displayCats(categories) {
     let triviaCategories = []
     triviaCategories.push(`<option value="">Select Category</option>`)

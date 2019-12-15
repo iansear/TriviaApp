@@ -35,17 +35,21 @@ function start(response, mode = 'S') {
     }
     gameRef = firebase.database().ref('games/'+pin);
     // set game status to JOINING
-    gameRef.child('question').set({text: 'JOINING', num: -1});
+    gameRef.child('question').set({text: 'JOINING', num: myquiz.questions.length, ans: -1});
 
     // show the play section
     // TODO tell players where to go to join the game
+    
     // add header info to users element
+    /*
     headerHTML = `<div class="col">Quiz title: ${myquiz.name}</div>
                 <div class="col">Quiz owner: ${myquiz.owner}</div>`;
     users.innerHTML = headerHTML;
+    */
+
     // setup the main play section
     questionnum.innerHTML = '---';
-    question.innerHTML = `Waiting for players to join with game id ${pin}`;
+    question.innerHTML = `Waiting for players to join with game id ${pin} at https://danochs99.github.io/TriviaPlayerApp/`;
     answers.style.display = 'none';
     // collapse landing and show display
     login.style.display = 'none';
@@ -54,6 +58,7 @@ function start(response, mode = 'S') {
 
     if (mode != 'S') {
         // multi - player mode
+        users.style.display = 'flex';
         gameRef.child('players').on('child_added', (snapshot) => {updateUserList(snapshot)});
         if (mode == 'B') {
             // this is Both mode - host is playing and remote players may join
@@ -67,14 +72,14 @@ function start(response, mode = 'S') {
         let countdownJoinDisp = 30;
         let id = setInterval(cdown_join, 1000);
         function cdown_join() {
-            questionnum.innerHTML = countdownJoinDisp;
+            countdown.innerHTML = countdownJoinDisp;
             countdownJoinDisp -= 1;
             if (countdownJoinDisp == 0) {
                 clearInterval(id);
-                questionnum.innerHTML = '---';
+                countdown.innerHTML = '---';
                 if (joinedUsers > 0) {
                     // there is at least one player, so run the game loop
-                    qLoop(pin, myquiz, playerObj)
+                    qLoop(pin, myquiz, mode)
                 }
                 else {
                     // nobody wanted to play with us so jump back to the landing page
@@ -95,13 +100,13 @@ function start(response, mode = 'S') {
         }
         gameRef = firebase.database().ref('games/'+pin);
         playerRef = gameRef.child('players').push(playerObj);
-        users.innerHTML = `${users.innerHTML}<div>${appUser.email}</div>`;
+        users.innerHTML = `${users.innerHTML}<div id="${playerRef.key}">${appUser.email}</div>`;
         joinedUsers += 1;
-        qLoop(pin, myquiz, playerObj);
+        qLoop(pin, myquiz, mode);
     }
 }
 
-async function qLoop(pin, myquiz) {
+async function qLoop(pin, myquiz, mode) {
     // this is the main game loop!
     // show a question, start countdown a timer
     // if all users have responded jump to next question
@@ -109,21 +114,64 @@ async function qLoop(pin, myquiz) {
     // show the answer buttons
     answers.style.display = 'flex';
 
+    // attach response listener for this game
+    gameRef.child('responses').on('child_added', (snapshot) => {responseAdded(snapshot)});
+
     // iterate over the questions in this quiz
     for (qindex = 0; qindex < myquiz.questions.length; qindex++) {
-        responseCount = 0;
+        responseCount = 0;    // reset the responses counter
+        // reset all the users displayed to 'not responded yet state'
+        users_elements = users.children;
+        for (let i = 0; i < users_elements.length; i++) {
+            users_elements[i].style.color = 'white';
+        }
         // display the question
-        firebase.database().ref('games/'+pin).child('question').set({text: myquiz.questions[qindex].text, qindex: qindex});
-        displayQuestion(myquiz, qindex);
+        gameRef.child('question').set({text: myquiz.questions[qindex].text, num: qindex, ans: myquiz.questions[qindex].answers.length});
+        if (mode == 'M') {
+            displayQuestion(myquiz, qindex, false);
+        }
+        else {
+            displayQuestion(myquiz, qindex);
+        }
         await qTimer(15);
+        // tally responses to this question here
+        let resp_q = qindex;
+        let resp_correct = dispCorrect;
+        gameRef.child('players').once('value', (players_snapshot) => {
+            gameRef.child('responses').once('value', (responses_snapshot) => {
+                if (responses_snapshot.exists()) {   // only go forward if someone has responded to something
+                    order = 0;
+                    let sv_players = players_snapshot.val();
+                    let sv_responses = responses_snapshot.val();
+                    let keys = Object.keys(sv_responses);
+                    for (let i=0; i<keys.length; i++) {
+                        if (sv_responses[keys[i]]['q'] == resp_q) {    // is this a response to current question?
+                            let resp_playerObj = sv_players[sv_responses[keys[i]]['p']] // get the starting playerObj
+                            if(sv_responses[keys[i]]['r'] == resp_correct)  {  // is this a correct response?
+                                order += 1;
+                                resp_playerObj[resp_q] = [1, order];
+                            }
+                            else
+                            {
+                                resp_playerObj[resp_q] = [0, -1];
+                            }
+                            // update this player's playerObj with this response - if a player didn't respond
+                            // default [0,-1] in playerObj from initialization is the right entry
+                            gameRef.child('players').child(sv_responses[keys[i]]['p']).set(resp_playerObj);
+                        }
+                    }
+                }
+            });
+        });
         await flashcorrect();
     }
     // no more questions
-    firebase.database().ref('games/'+pin).child('question').set({text: 'GAME_OVER', qindex: -1});    
+    gameRef.child('question').set({text: 'GAME_OVER', num: -1, ans: -1});    
     getScores(pin);
     questionnum.innerHTML = '---';
     question.innerHTML = `GAME_OVER`;
     answers.style.display = 'none';
+    gameRef.child('responses').off('child_added');
     setTimeout(() => { login.style.display = 'none';
                        landing.style.display = 'block';
                        play.style.display = 'none';
@@ -138,7 +186,6 @@ async function qTimer(delaySecs) {
         await sleep(1000);
         countdownTimeDisp -= 1;
         // check for responses
-        // TODO - fix for multiplayer
         if (responseCount == joinedUsers) {
             // if everybody has responded fast forward to end...
             countdownTimeDisp = 0;
@@ -148,8 +195,21 @@ async function qTimer(delaySecs) {
 }
 
 function updateUserList(snapshot) {
-    users.innerHTML = `${users.innerHTML}<div>${snapshot.val().name}</div>`;
+    users.innerHTML = `${users.innerHTML}<div id="${snapshot.key}">${snapshot.val().name}</div>`;
     joinedUsers += 1;
+}
+
+function responseAdded(snapshot) {
+    // update current response count for this question
+    let response = snapshot.val();
+    //console.log(response['p']);    // this is the player key
+    //console.log(response['q']);    // this is the question index
+    //console.log(response['r']);    // this is the response
+    if (response['q'] == qindex) {   // check that we're on the right question
+        responseCount += 1;          // increment the response count
+        let responded = document.getElementById(response['p']);
+        responded.style.color = 'red';
+    }
 }
 
 function getRandomInt() {
@@ -165,22 +225,9 @@ function buttonClick(ev) {
 
     // record this response in the responses list
     gameRef.child('responses').push(response);
-    
-    // TODO - edit this out later
-        // hacks to make single player work!
-    let key = qindex.toString();
-    if (ev.target.id == dispCorrect) {
-        playerObj[key] = [1, -1];
-    }
-    else {
-        playerObj[key] = [0, -1];
-    }
-    playerRef.set(playerObj);
-    responseCount += 1;
-    // end of horrible hacks to keep things going
 
     // response entered - disable the buttons
-    ev.target.style.backgroundColor = 'red';
+    ev.target.style.backgroundColor = 'navy';
 
     let buttons = answers.children;
     for (let i=0; i<buttons.length; i++) {

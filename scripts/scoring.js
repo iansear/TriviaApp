@@ -1,5 +1,6 @@
 let scoreboard = document.getElementById("scoreboard")
 
+//Displays score(s) to scoreboard/leaderboard
 function displayScores(scores) {
     let scoreboardItems = []
     scoreboardItems.push("<ul>")
@@ -10,6 +11,7 @@ function displayScores(scores) {
     scoreboard.innerHTML = scoreboardItems.join(" ")
 }
 
+//Gets quiz results from the firebase and tallys score of player(s)
 function getScores(pin) {
     let players = firebase.database().ref().child("games").child(pin).child("players")
     let scores = []
