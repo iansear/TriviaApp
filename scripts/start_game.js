@@ -195,7 +195,7 @@ async function qTimer(delaySecs) {
 }
 
 function updateUserList(snapshot) {
-    users.innerHTML = `${users.innerHTML}<div id="${snapshot.key}">${snapshot.val().name}</div>`;
+    users.innerHTML = `${users.innerHTML}<div id="${snapshot.key}" class="col">${snapshot.val().name}</div>`;
     joinedUsers += 1;
 }
 
