@@ -36,7 +36,9 @@ goButton.addEventListener("click", () => {
 async function getTrivia(url) {
     let rawResponse = await fetch(url)
     let response = await rawResponse.json()
-    
+    // Trivia JSON HERE!!!!
+    //use previewquiz(response) to launch previewer here or start(response) to launch a game here...
+    //previewquiz(response);
     let gamemode = '';
     if(response.response_code == 0) {
         for(let i = 0; i < modeButtons.length; i++) {
